@@ -1,24 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import PropTypes from 'prop-types'; 
 
-
-const Form = ( ) => {
+const Form = (props) => {
    
 const [showAlert, setShowAlert] = useState(true);
 const [showError, setShowError] = useState(true);
 const [toDo, setToDo] = useState('');
 const [date, setDate] = useState('');
 const [title, setTitle] = useState('');
-const [doneCard, setDoneCard] = useState(false);
-const [undoCard, setUndoCard] = useState(true);
-const [editCard, setEditCard] = useState(false);
-const [deleteCard, setDeleteCard] = useState(false);
-const [saveCard, setSaveCard] = useState(false);
-
-
-
-
 const [formData, setFormData] = useState([]);
-
 
 
   const toggleSuccessAlert = () => {
@@ -35,50 +25,51 @@ const [formData, setFormData] = useState([]);
     }, 2000);
   };
 
-
   const handleSubmit = (e) => {
     e.preventDefault();
     const randomId = crypto.randomUUID();
-    console.log({id:randomId,date,title,toDo,doneCard:false,undoCard:false,editCard:false,deleteCard:false,saveCard:false});
-    const data = {i:randomId,date,title,toDo,doneCard:false,undoCard:false,editCard:false,deleteCard:false,saveCard:false};
+    const data = {
+      id: randomId,
+      date,
+      title,
+      toDo,
+      doneCard: false,
+      undoCard: false,
+      editCard: false,
+      deleteCard: false,
+      saveCard: false,
+    };
     if (!date || !title || !toDo) {
       toggleErrorAlert();
-     } else {
-       toggleSuccessAlert();
-      setFormData([...formData,data]);
-      const updatedForm = JSON.stringify([...formData, data])
-localStorage.setItem('formData', updatedForm );
+    } else {
+      toggleSuccessAlert();
+      setFormData([...formData, data]); // Update the formData state
+      const updatedForm = JSON.stringify([...formData, data]);
+      console.log('updatedForm:', updatedForm); 
+      localStorage.setItem('formData', updatedForm);
       setDate('');
       setTitle('');
       setToDo('');
-  }};
 
-
-/*Features*/
-
-
-  const toggleDoneCard = () => {
-    setDoneCard(true);
-    setUndoCard(true);
+      // Call the callback function to update the data in the parent component
+      props.updateFormData(data);
+    }
   };
 
-  const toggleUndoCard = () => {
-    setUndoCard(false);
-    setDoneCard(false);
-  };
+  {/*retrieve data from local storage*/}
 
-  const toggleEditCard = () => {
-    setEditCard(true);
-    setSaveCard(true);
-  };
+  useEffect(() => {
+    const storedData = localStorage.getItem('formData');
+    if (storedData) {
+      const parsedData = JSON.parse(storedData);
+      setFormData(parsedData);
+    }
+  }, []);
 
-  const toggleDeleteCard = () => {
-    setDeleteCard(true);
-  };
 
-  const toggleSaveCard = () => {
-    setSaveCard(false);
-    setEditCard(false);
+  const clearLocalStorage = () => {
+    localStorage.clear();
+    setFormData([]); 
   };
 
 
@@ -173,61 +164,23 @@ localStorage.setItem('formData', updatedForm );
               >
                 + Add
               </button>
-              <button type="button" className="btn btn-danger px-3">
+              <button type="button"  onClick={clearLocalStorage} className="btn btn-danger px-3">
                 <i className="bi bi-trash"></i> Delete All
               </button>
             </div>
           </div>
           </form>
           </main>
-
-          <section id="hBgColor">
-        <div className="mb-2 mt-2">
-          <h3 className="h3 p-1">My to-Dos</h3>
-        </div>
-
         {/*Generate a Card with User Input*/}
-
-        {formData.map((a) => (
-    
-      <div  key={a.id} className={`card shadow mt-1 ${doneCard ? 'bg-dark' : ''}`} style={{ width: '40vw' }}>
-        <div className={`card-body`}>
-          <div className="d-flex justify-content-end">
-            <p className="p-0 hDate" style={{ fontSize: '10px' }}>
-              {a.date}
-            </p>
-          </div>
-          <h5 className="card-title" style={{ marginTop: '-1.5rem' }}>
-           {a.title}
-          </h5>
-          <p className="card-text">
-            {a.toDo}
-          </p>
-          <div className="gap-3 hIcons">
-            <button className={`btn btn-primary ${editCard ? 'd-none' : ''}`} type="button" onClick={toggleEditCard}   style={{ fontSize: '1.2rem' }}>
-              <i className="bi bi-pencil-square"></i>
-            </button>
-            <button className={`btn btn-success ${editCard ? '' : 'd-none'}`} type="button" onClick={toggleSaveCard} style={{ fontSize: '1.2rem' }}>
-              <i className="bi bi-save"></i>
-            </button>
-            <button className="btn btn-danger" type="button" onClick={toggleDeleteCard} style={{ fontSize: '1.2rem' }}>
-              <i className="bi bi-trash"></i>
-            </button>
-            <button className={`btn btn-success ${doneCard ? 'd-none' : ''} `} type="button"  style={{ fontSize: '1.2rem'}} onClick={toggleDoneCard} >
-              <i className='bi bi-check-circle'></i>
-            </button>
-            <button className={`btn btn-warning  ${undoCard ? '' : 'd-none' }`}    id="hCancelBtn" onClick={toggleUndoCard}  type="button" style={{ fontSize: '1.2rem' }}>
-              <i className="bi bi-arrow-counterclockwise"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-   ))}
-      </section>
-        
       </section>
     </>
   );
+};
+
+
+// Add prop type validation
+Form.propTypes = {
+  updateFormData: PropTypes.func.isRequired,
 };
 
 export default Form;

@@ -1,12 +1,12 @@
-import Form from './components/form';
 import NavBar from './components/navbar';
+import ToDos from './components/todos'
 
 const App = () => {
 
   return (
     <>
       <NavBar />
-      <Form /> 
+      <ToDos/> 
     </>
   );
 };
